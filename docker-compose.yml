@@ -1,0 +1,41 @@
+version: '3.6'
+
+networks:
+  project:
+    driver: bridge
+
+
+services:
+
+  mysql:
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ${PROJECT_DIR}/logs/mysql:/var/log/mysql
+      - ${PROJECT_DIR}/data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - project
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    volumes:
+      - ${PROJECT_DIR}/html:/var/www/html
+      - ${PROJECT_DIR}/logs/php:/var/log/php/
+    ports:
+      - "80:80"
+    networks:
+      - project
